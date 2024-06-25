@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using trello.Data;
@@ -20,67 +21,30 @@ namespace trello.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<MyTasks>> GetAll()
+        public async Task<ActionResult<List<MyTasks>>> GetAll()
         {
-            return _context.Tasks.ToList();
+            var tasks = await _context.Tasks.ToListAsync();
+            if (tasks == null) return NotFound();
+            return tasks;
         }
 
+        // Exemple d'une méthode avec validation et gestion d'erreur
         [HttpGet("list/{listId}")]
-        public ActionResult<List<MyTasks>> GetByList(int listId)
+        public async Task<ActionResult<List<MyTasks>>> GetTasksByListId(int listId)
         {
-            return _context.Tasks.Where(task => task.ListId == listId).ToList();
-        }
-
-        [HttpGet("{id}")]
-        public ActionResult<MyTasks> GetById(int id)
-        {
-            var task = _context.Tasks.Find(id);
-
-            if (task == null)
+            if (listId <= 0)
             {
-                return NotFound();
+                return BadRequest("Invalid list ID");
             }
 
-            return task;
-        }
+            var tasks = await _context.Tasks.Where(t => t.ListId == listId).ToListAsync();
 
-        [HttpPost]
-        public async Task<ActionResult<MyTasks>> Create(MyTasks task)
-        {
-            _context.Tasks.Add(task);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetById), new { id = task.Id }, task);
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, MyTasks task)
-        {
-            if (id != task.Id)
+            if (!tasks.Any())
             {
-                return BadRequest();
+                return NotFound($"No tasks found for list ID {listId}");
             }
 
-            _context.Entry(task).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var task = await _context.Tasks.FindAsync(id);
-
-            if (task == null)
-            {
-                return NotFound();
-            }
-
-            _context.Tasks.Remove(task);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return tasks;
         }
     }
 }

@@ -10,6 +10,7 @@ namespace trello.models
         // Navigation properties
         public Projects? Project { get; set; }
         public ICollection<MyTasks> Tasks { get; set; }
+        public object Name { get; internal set; }
 
         public Lists()
         {

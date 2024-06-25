@@ -26,16 +26,23 @@ namespace trello.Controllers
         }
 
         // GET: api/project/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Projects>> GetProject(int id)
-        {
-            var project = await _context.Projects.FindAsync(id);
-            if (project == null)
-            {
-                return NotFound();
+       [HttpGet("{id}")]
+       public async Task<ActionResult<Projects>> GetProjectById(int id)
+       {
+         if (id <= 0)
+           {
+              return BadRequest("Invalid ID");
+           }
+
+         var project = await _context.Projects.FindAsync(id);
+
+          if (project == null)
+           {
+              return NotFound();
             }
-            return project;
-        }
+
+        return project;
+       }
 
         // PUT: api/project/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
